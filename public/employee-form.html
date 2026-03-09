@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Employee Profile</title>
+
+<style>
+
+body{
+font-family: Arial;
+background:#f2f2f2;
+padding:30px;
+}
+
+.container{
+background:white;
+padding:20px;
+width:400px;
+margin:auto;
+border-radius:8px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin:10px 0;
+}
+
+button{
+padding:10px;
+width:100%;
+background:#007BFF;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+button:hover{
+background:#0056b3;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Add Employee</h2>
+
+<input type="number" id="emp_no" placeholder="Employee Number">
+
+<input type="text" id="first_name" placeholder="First Name">
+
+<input type="text" id="last_name" placeholder="Last Name">
+
+<input type="email" id="email" placeholder="Email">
+
+<input type="text" id="phone" placeholder="Phone">
+
+<select id="division">
+<option value="">Select Division</option>
+</select>
+
+<select id="department">
+<option value="">Select Department</option>
+</select>
+
+<button onclick="saveEmployee()">Save Employee</button>
+
+<br><br>
+
+<button onclick="window.location='employee-list.html'">
+Back to List
+</button>
+
+</div>
+
+<script>
+
+async function loadDivisions(){
+
+try{
+
+const res = await fetch("/api/employees/divisions");
+const data = await res.json();
+
+let options="<option value=''>Select Division</option>";
+
+data.forEach(d=>{
+options += `<option value="${d.division_id}">${d.division_name}</option>`;
+});
+
+document.getElementById("division").innerHTML = options;
+
+}catch(err){
+
+console.error("Error loading divisions",err);
+
+}
+
+}
+
+async function loadDepartments(){
+
+try{
+
+const res = await fetch("/api/employees/departments");
+const data = await res.json();
+
+let options="<option value=''>Select Department</option>";
+
+data.forEach(d=>{
+options += `<option value="${d.department_id}">${d.department_name}</option>`;
+});
+
+document.getElementById("department").innerHTML = options;
+
+}catch(err){
+
+console.error("Error loading departments",err);
+
+}
+
+}
+
+async function saveEmployee(){
+
+const emp_no=document.getElementById("emp_no").value;
+const first_name=document.getElementById("first_name").value;
+const last_name=document.getElementById("last_name").value;
+const email=document.getElementById("email").value;
+const phone=document.getElementById("phone").value;
+const division_id=document.getElementById("division").value;
+const department_id=document.getElementById("department").value;
+
+
+/* Validation */
+
+if(!emp_no || !first_name || !last_name){
+
+alert("Employee number, first name and last name are required");
+
+return;
+
+}
+
+try{
+
+const res = await fetch("/api/employees",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+emp_no,
+first_name,
+last_name,
+email,
+phone,
+division_id,
+department_id
+})
+
+});
+
+const result = await res.json();
+
+if(res.ok){
+
+alert("Employee Saved Successfully");
+window.location="employee-list.html";
+
+}else{
+
+alert(result.error || "Error saving employee");
+
+}
+
+}catch(err){
+
+console.error(err);
+alert("Server error");
+
+}
+
+}
+
+loadDivisions();
+loadDepartments();
+
+</script>
+
+</body>
+</html>

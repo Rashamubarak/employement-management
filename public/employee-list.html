@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Employee List</title>
+
+<style>
+
+body{
+font-family: Arial;
+padding:30px;
+background:#f4f4f4;
+}
+
+.container{
+background:white;
+padding:20px;
+border-radius:8px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+}
+
+th,td{
+border:1px solid #ddd;
+padding:10px;
+text-align:left;
+}
+
+button{
+padding:6px 12px;
+margin:4px;
+cursor:pointer;
+}
+
+button:hover{
+background:#e6e6e6;
+}
+
+.filters{
+margin-bottom:15px;
+}
+
+select,input{
+padding:6px;
+margin-right:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Employee List</h2>
+
+<div class="filters">
+
+<input type="text" id="searchEmp" placeholder="Search Emp No">
+
+<select id="divisionFilter"></select>
+
+<select id="departmentFilter"></select>
+
+<button onclick="loadEmployees()">Search</button>
+
+<button onclick="window.location='employee-form.html'">
+Add Employee
+</button>
+
+</div>
+
+<table>
+
+<thead>
+<tr>
+
+<th>Emp No</th>
+<th>Name</th>
+<th>Email</th>
+<th>Phone</th>
+<th>Division</th>
+<th>Department</th>
+<th>Action</th>
+
+</tr>
+</thead>
+
+<tbody id="employeeTable"></tbody>
+
+</table>
+
+</div>
+
+<script>
+
+async function loadDivisions(){
+
+try{
+
+const res = await fetch("/api/employees/divisions");
+const data = await res.json();
+
+let options = "<option value=''>All Divisions</option>";
+
+data.forEach(d=>{
+options += `<option value="${d.division_id}">${d.division_name}</option>`;
+});
+
+document.getElementById("divisionFilter").innerHTML = options;
+
+}catch(err){
+
+console.error("Division load error",err);
+
+}
+
+}
+
+async function loadDepartments(){
+
+try{
+
+const res = await fetch("/api/employees/departments");
+const data = await res.json();
+
+let options = "<option value=''>All Departments</option>";
+
+data.forEach(d=>{
+options += `<option value="${d.department_id}">${d.department_name}</option>`;
+});
+
+document.getElementById("departmentFilter").innerHTML = options;
+
+}catch(err){
+
+console.error("Department load error",err);
+
+}
+
+}
+
+async function loadEmployees(){
+
+try{
+
+const search = document.getElementById("searchEmp").value;
+const division = document.getElementById("divisionFilter").value;
+const department = document.getElementById("departmentFilter").value;
+
+const res = await fetch("/api/employees");
+const data = await res.json();
+
+let rows = "";
+
+data.forEach(emp => {
+
+if(search && !String(emp.emp_no).includes(search)) return;
+if(division && emp.division_id != division) return;
+if(department && emp.department_id != department) return;
+
+rows += `
+<tr>
+
+<td>${emp.emp_no}</td>
+<td>${emp.first_name} ${emp.last_name}</td>
+<td>${emp.email || ""}</td>
+<td>${emp.phone || ""}</td>
+<td>${emp.division_name || ""}</td>
+<td>${emp.department_name || ""}</td>
+
+<td>
+
+<button onclick="deleteEmployee(${emp.employee_id})">
+Delete
+</button>
+
+</td>
+
+</tr>
+`;
+
+});
+
+document.getElementById("employeeTable").innerHTML = rows;
+
+}catch(err){
+
+console.error("Employee load error",err);
+alert("Error loading employees");
+
+}
+
+}
+
+async function deleteEmployee(id){
+
+if(!confirm("Delete this employee?")) return;
+
+try{
+
+await fetch("/api/employees/"+id,{
+method:"DELETE"
+});
+
+alert("Employee deleted");
+
+loadEmployees();
+
+}catch(err){
+
+console.error(err);
+alert("Delete failed");
+
+}
+
+}
+
+loadDivisions();
+loadDepartments();
+loadEmployees();
+
+</script>
+
+</body>
+</html>
