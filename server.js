@@ -20,7 +20,7 @@ app.use("/api/users", userRoutes);
 
 // Test route (optional but useful)
 app.get("/", (req, res) => {
-  res.send("Employee Management System API running");
+  res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
 // Port configuration (important for deployment)
