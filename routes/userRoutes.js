@@ -6,7 +6,9 @@ router.post("/login", async (req, res) => {
 
   try {
 
-    const { username, password } = req.body;
+    // Trim spaces from input
+    const username = req.body.username.trim();
+    const password = req.body.password.trim();
 
     if (!username || !password) {
       return res.json({ success:false, message:"Missing credentials" });
